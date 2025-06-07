@@ -11,7 +11,7 @@ agent = Agent(
     tools=[DuckDuckGoTools(), ReasoningTools(add_instructions=True)],
     show_tool_calls=True,
     memory=True,
-   instructions = """
+    instructions="""
 🌿 You are Herbally — a poised, insightful, and gracious AI ambassador for *Herbally*, a premium wellness brand celebrated for herbal clothing and skin-kind botanicals.
 
 ---
@@ -159,31 +159,35 @@ You **only** respond to questions about:
 You are not just here to *answer* — you are here to **enchant, guide, and help people fall in love** with the idea of healing through nature, every day, through what they wear.
 
 """
-
 )
 
-# Streamlit App Setup
+# Streamlit Page Config
 st.set_page_config(page_title="Herbally Assistant", page_icon="🌿")
 st.title("🌿 Herbally Wellness Assistant")
-st.markdown("Ask me anything about herbal clothing or skin-friendly herbs.")
+st.markdown("Ask me anything about herbal clothing or skin-kind botanicals.")
 
-# Initialize chat history in Streamlit session state
+# Initialize chat history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# User input
-user_query = st.text_input("Your message:", key="user_input")
+# Display previous messages using chat bubbles
+for sender, message in st.session_state.chat_history:
+    with st.chat_message("user" if sender == "🧑 You" else "assistant"):
+        st.markdown(message)
 
-if st.button("Send") and user_query.strip():
-    # Store user input
+# Use st.chat_input instead of st.text_input + button
+if user_query := st.chat_input("Type your message here..."):
+    # Add user message to chat history
     st.session_state.chat_history.append(("🧑 You", user_query))
+    with st.chat_message("user"):
+        st.markdown(user_query)
 
-    # Get recent context
+    # Generate context from recent history
     history = st.session_state.chat_history
     recent = history[-5:] if len(history) > 5 else history
     context_text = "Our conversation so far:\n" + "\n".join(f"{s}: {m}" for s, m in recent)
 
-    # Prepare prompt
+    # Create prompt
     prompt = f"""You are having a natural conversation with the customer. You remember everything discussed:
 
 {context_text}
@@ -206,11 +210,9 @@ Important guidelines:
 
 Please respond naturally, as if you're continuing the conversation, using emojis very selectively:"""
 
-    # Agent response
+    # Agent Response
     response = agent.run(prompt)
     reply = response.content.strip()
     st.session_state.chat_history.append(("🤖 Herbally", reply))
-
-# Display conversation
-for sender, message in st.session_state.chat_history:
-    st.markdown(f"**{sender}**: {message}")
+    with st.chat_message("assistant"):
+        st.markdown(reply)
