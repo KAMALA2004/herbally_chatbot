@@ -19,7 +19,9 @@ charset-normalizer
 idna
 oauthlib
 python-jose
-cryptography 
-agno
-transformers
-duckduckgo-search
+cryptography
+GoogleNews
+pytrends
+feedparser
+beautifulsoup4
+firebase_admin
